@@ -3,7 +3,7 @@
 
 import cv2
 import time
-#from picamera2 import Picamera2
+from picamera2 import Picamera2
 
 from tflite_support.task import core
 from tflite_support.task import processor
@@ -46,6 +46,16 @@ picam2.preview_configuration.align()#helps stabilize size fed/obtained by camera
 picam2.configure("preview")
 picam2.start()
 
+#for webcam
+
+#v4l2-ctl --list-devices
+#the webcam should be under something with WEBCAM
+
+#webCam='/dev/video1'
+#cam=cv2.VideoCapture(webCam)
+#cam.set(cv2.CAP_PROP_FRAME_WIDTH, dispW)
+#cam.set(cv2.CAP_PROP_FRAME_HEIGTH, dispH)
+#cam.set(cv2.CAP_PROP_FRAME_FPS, 30)
 
 #calculating fps and ons screen display
 pos=(20,60)
@@ -58,6 +68,7 @@ myColor=(255,0,0)#blue
 fps=0 
 
 #setup obeject detection
+
 base_options=core.BaseOptions(file_name=model, use_coral=True, num_threads=num_threads)
 detection_options=processor.DetectionOptions(max_results=max_detected_objects, score_threshold=0.3)
 options=vision.ObjectDetectorOptions(base_options=base_options, detection_options=detection_options)
@@ -79,24 +90,66 @@ while True:
     imRGB=cv2.cvtColor(im,cv2.COLOR_BGR2RGB)
     imTensor=vision.TensorImage.create_from_array(imRGB)#converts image to tensor for tflite
     detections=detector.detect(imTensor)#data structure containing the detections
+    for detectedObjects in detections.detections:
+        class_name = detectedObjects.categories[0].category_name
+        # Only process 'person' label
+        if class_name == "person":
+            bbox = detectedObjects.bounding_box
+            x1, y1 = bbox.origin_x, bbox.origin_y
+            x2, y2 = x1 + bbox.width, y1 + bbox.height
+
+            # Draw rectangle around person
+            cv2.rectangle(im, (x1, y1), (x2, y2), (255, 255, 255), 2)
+
+            # Add label text
+            cv2.putText(im, class_name, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+    #trying to see how to print, or get, data from detected images
+  
+    
+    #time.sleep(10) #for seeing the detections data structure printed
+    #print(detections)
+        
+
+#DetectionResult(detections=[Detection(bounding_box=BoundingBox(origin_x=413, origin_y=340, width=26, height=68), categories=[Category(index=43, score=0.4140625, display_name='', category_name='bottle')]), Detection(bounding_box=BoundingBox(origin_x=370, origin_y=396, width=123, height=81), categories=[Category(index=61, score=0.4140625, display_name='', category_name='chair')]), Detection(bounding_box=BoundingBox(origin_x=313, origin_y=352, width=28, height=54), categories=[Category(index=43, score=0.39453125, display_name='', category_name='bottle')]), Detection(bounding_box=BoundingBox(origin_x=478, origin_y=341, width=17, height=52), categories=[Category(index=43, score=0.33203125, display_name='', category_name='bottle')])])
+ #categories=[Category(index=43, score=0.33203125, display_name='', category_name='bottle'
+   
+   #print(detections.detections)
+#[Detection(bounding_box=BoundingBox(origin_x=139, origin_y=357, width=21, height=45), categories=[Category(index=43, score=0.43359375, display_name='', category_name='bottle')]), Detection(bounding_box=BoundingBox(origin_x=313, origin_y=354, width=27, height=53), categories=[Category(index=43, score=0.43359375, display_name='', category_name='bottle')]), Detection(bounding_box=BoundingBox(origin_x=318, origin_y=397, width=204, height=81), categories=[Category(index=61, score=0.37109375, display_name='', category_name='chair')]), Detection(bounding_box=BoundingBox(origin_x=597, origin_y=359, width=30, height=59), categories=[Category(index=43, score=0.33203125, display_name='', category_name='bottle')]), Detection(bounding_box=BoundingBox(origin_x=327, origin_y=94, width=21, height=54), categories=[Category(index=43, score=0.3125, display_name='', category_name='bottle')])]
+    #print (detections.detections)
+   
+            
+            
+            
+    #Detection(bounding_box=BoundingBox(origin_x=314, origin_y=354, width=25, height=53), categories=[Category(index=43, score=0.4140625, display_name='', category_name='bottle')])
+    
+    #print(detections.detections[1].categories)
+    #[Category(index=43, score=0.37109375, display_name='', category_name='bottle')]
+    
+    #print(detections.detections[1].categories[0].category_name)
+    #bottle
+    #print(detections.detections[1].categories[0].score)
+    
+    #print(detections.detections[1].bounding_box.origin_x)
+    #314
+    
+
+
+
+
+
+
 
     #debugging purpose (overlays im with detected results)
-    #image=utils.visualize(im, detections)#decorate the image? labels w/ bounding boxes?
-    for detectedObjects in detections.detections:
-            class_name = detectedObjects.categories[0].category_name
-
-            # Only process 'person' label
-            if class_name == "person":
-                bbox = detectedObjects.bounding_box
-                x1, y1 = bbox.origin_x, bbox.origin_y
-                x2, y2 = x1 + bbox.width, y1 + bbox.height
-
-                # Draw rectangle around person
-                cv2.rectangle(im, (x1, y1), (x2, y2), (255, 255, 255), 2)
-
-                # Add label text
-                cv2.putText(im, class_name, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-
+    image=utils.visualize(im, detections)#decorate the image? labels w/ bounding boxes?
+    
+    
+ 
+    
+    
+    #for x in range(xmin, xmax, increment)
+    
+    #for i in range(0, len(detect))
+    
     if len(detections.detections)>=1:
         for detectedObjects in range(0,len(detections.detections)):
             if detections.detections[detectedObjects].categories[0].category_name=="person":
@@ -164,7 +217,7 @@ while True:
         break
     tEnd=time.time()
     loopTime=tEnd-tStart
-    fps= 0.9*fps + 0.1*(1/loopTime) #Low pass filter?
+    fps= 0.9*fps + 0.1*1/loopTime #Low pass filter?
     print("frames per second: ", fps)
     tStart=time.time()
     
