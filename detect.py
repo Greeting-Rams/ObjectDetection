@@ -76,12 +76,19 @@ detector=vision.ObjectDetector.create_from_options(options)
 
 #start time when going into loop
 tStart=time.time()
-
+frame_counter =0;
 while True:
     #read image
     
     #from webcam
     #ret, im =cam.read()
+    frame_counter += 1
+
+    # If the counter is divisible by 6, capture/save
+    if frame_counter % 6 == 0:
+        filename = f"captures/capture_{frame_counter}.jpg"
+        cv2.imwrite(filename, im)
+        print(f"Saved: {filename}")
     im=picam2.capture_array()
 #     im=cv2.flip(im,-1) #flips the image
     
