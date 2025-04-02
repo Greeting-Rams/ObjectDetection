@@ -4,6 +4,7 @@
 import cv2
 import time
 from picamera2 import Picamera2
+from coordinates import get_person_coordinates
 
 from tflite_support.task import core
 from tflite_support.task import processor
@@ -85,7 +86,7 @@ while True:
     frame_counter += 1
 
     # If the counter is divisible by 6, capture/save
-    if frame_counter % 6 == 0:
+    if frame_counter % 15 == 0:
         filename = f"captures/capture_{frame_counter}.jpg"
         cv2.imwrite(filename, im)
         print(f"Saved: {filename}")
@@ -147,7 +148,7 @@ while True:
 
 
     #debugging purpose (overlays im with detected results)
-    image=utils.visualize(im, detections)#decorate the image? labels w/ bounding boxes?
+    #image=utils.visualize(im, detections)#decorate the image? labels w/ bounding boxes?
     
     
  
@@ -180,42 +181,7 @@ while True:
                 #print(midx)
                 #im[y,x]
                 
-                #need 2 for loops for averaging the colors, ran out of time
-                #only extracting 1 pixel value
-                color=im[midy,midx]
-                blue=int(color[0])
-                green=int(color[1])
-                red=int(color[2])
-                #print("blue is ", blue)
-                #print("green is ", green)
-                #print("red is ", red)
-                
-                outfitColor=None
-                
-                
-                if red<40:
-                    if green<40 and blue<40:
-                        outfitColor="black"
-                    if red<20:
-                        if 50<green<160 and blue>200:
-                            outfitColor="blue"
-                        elif  green>120 and blue<160:
-                            outfitColor="green"
-                #else if to red<40
-                elif red>100:
-                    if green>130 and blue>130:
-                        outfitColor="white"
-                    elif green<50 and blue<100:
-                        outfitColor="red"
-                else:
-                    outfitColor=None
-                
-                print("outfit color is: ", outfitColor)
-                time.sleep(5)
-                
-                break #for breaking out of for loop (iterating through detections)
-            
-    
+               
     
     #following is showing the image (camera feed) and fps
     cv2.putText(im,str(int(fps))+' FPS',pos,font,height,myColor,weight) #display fps on screen
@@ -225,7 +191,7 @@ while True:
     tEnd=time.time()
     loopTime=tEnd-tStart
     fps= 0.9*fps + 0.1*1/loopTime #Low pass filter?
-    print("frames per second: ", fps)
+   # print("frames per second: ", fps)
     tStart=time.time()
     
     
